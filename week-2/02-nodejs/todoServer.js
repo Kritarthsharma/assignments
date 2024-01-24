@@ -39,11 +39,115 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+const express = require("express");
+const fs = require("fs");
+
+const app = express();
+
+app.use(express.json());
+
+app.get("/todos", (req, res) => {
+  fs.readFile("todos.json", "utf8", (err, data) => {
+    if (err) {
+      res.status(500).send("Unable to read file");
+      throw err;
+    }
+    const todos = JSON.parse(data);
+    res.status(200).json(todos);
+  });
+});
+
+app.get("/todos/:id", (req, res) => {
+  let id = req.params.id;
+  fs.readFile("todos.json", "utf8", (err, data) => {
+    if (err) {
+      res.status(500).send("Unable to read file");
+      throw err;
+    }
+    const todos = JSON.parse(data);
+    const todo = todos.find((obj) => obj.id == parseInt(id));
+    if (todo) res.status(200).json(todo);
+    else res.status(404).send("404 Not found");
+  });
+});
+
+app.post("/todos", (req, res) => {
+  fs.readFile("todos.json", "utf8", (err, data) => {
+    if (err) {
+      res.status(500).send("Unable to read file");
+      throw err;
+    }
+    const todos = JSON.parse(data);
+    const newTodo = {
+      id: Math.floor(Math.random() * 100000),
+      title: req.body.title,
+      description: req.body.description,
+      completed: false,
+    };
+    todos.push(newTodo);
+    fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
+      if (err) {
+        res.status(500).send("Unable to write in the file");
+        throw err;
+      }
+      res.status(201).json(newTodo);
+    });
+  });
+});
+
+app.put("/todos/:id", (req, res) => {
+  let id = req.params.id;
+  fs.readFile("todos.json", "utf8", (err, data) => {
+    if (err) {
+      res.status(500).send("Unable to read file");
+      throw err;
+    }
+    const todos = JSON.parse(data);
+    const ind = todos.findIndex((obj) => obj.id == parseInt(id));
+    if (ind != -1) {
+      const todo = todos[ind];
+      todo.title = req.body.title;
+      todo.description = req.body.description;
+      todo.completed = req.body.completed;
+      todos[ind] = todo;
+      fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
+        if (err) {
+          res.status(500).send("Unable to write in the file");
+          throw err;
+        }
+        res.status(200).json(todo);
+      });
+    } else res.status(404).send("404 Not found");
+  });
+});
+
+app.delete("/todos/:id", (req, res) => {
+  let id = req.params.id;
+  fs.readFile("todos.json", "utf8", (err, data) => {
+    if (err) {
+      res.status(500).send("Unable to read file");
+      throw err;
+    }
+    const todos = JSON.parse(data);
+    const ind = todos.findIndex((obj) => obj.id == parseInt(id));
+    if (ind != -1) {
+      todos.splice(ind, 1);
+      fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
+        if (err) {
+          res.status(500).send("Unable to write in the file");
+          throw err;
+        }
+        res.status(200).send();
+      });
+    } else res.status(404).send("404 Not found");
+  });
+});
+
+app.all("*", (req, res) => {
+  res.status(404).send("Route not found");
+});
+
+// app.listen(3000, () => {
+//   console.log(`Server is listening on port ${3000}`);
+// });
+module.exports = app;
