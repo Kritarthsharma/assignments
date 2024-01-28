@@ -1,22 +1,64 @@
 const { Router } = require("express");
+const jwt = require("jsonwebtoken");
 const adminMiddleware = require("../middleware/admin");
+const { Admin, Course } = require("../db/index");
+
 const router = Router();
 
+const jwtSecret = "AbraKaDabra";
+
 // Admin Routes
-router.post('/signup', (req, res) => {
-    // Implement admin signup logic
+router.post("/signup", async (req, res) => {
+  // Implement admin signup logic
+  const username = req.body.username;
+  const password = req.body.password;
+
+  // Find a user with the provided username and password
+  await Admin.create({ userName: username, passWord: password })
+    .then(() => res.status(200).json({ message: "Admin created successfully" }))
+    .catch((err) => {
+      console.log(err);
+      res.status(404).send("Failed to create Admin");
+    });
 });
 
-router.post('/signin', (req, res) => {
-    // Implement admin signup logic
+router.post("/signin", (req, res) => {
+  // Implement admin signup logic
+  const username = req.headers.username;
+
+  try {
+    const token = jwt.sign(username, jwtSecret);
+    res.json({ token: token });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Unable to Signin!");
+  }
 });
 
-router.post('/courses', adminMiddleware, (req, res) => {
-    // Implement course creation logic
+router.post("/courses", adminMiddleware, async (req, res) => {
+  // Implement course creation logic
+  let courseBody = {
+    title: req.body.title,
+    description: req.body.description,
+    price: req.body.price,
+    imageLink: req.body.imageLink,
+    published: true,
+  };
+
+  await Course.create(courseBody)
+    .then((course) =>
+      res
+        .status(200)
+        .json({ message: "Course created successfully", coursedId: course._id })
+    )
+    .catch(() => res.status(404).send("Failed to create Course"));
 });
 
-router.get('/courses', adminMiddleware, (req, res) => {
-    // Implement fetching all courses logic
+router.get("/courses", adminMiddleware, async (req, res) => {
+  // Implement fetching all courses logic
+  await Course.find({})
+    .then((courses) => res.status(200).json({ courses: courses }))
+    .catch(() => res.status(404).send("Failed to retrive all courses"));
 });
 
 module.exports = router;
