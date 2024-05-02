@@ -29,7 +29,7 @@ export const getPost = async (c: any): Promise<any> => {
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
 
-    const id = parseInt(c.req.param("id"));
+    const id = Number(c.req.param("id"));
 
     const result = await prisma.post.findUnique({
       where: { id },
@@ -85,7 +85,7 @@ export const updatePost = async (c: any): Promise<void> => {
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
 
-    const id = parseInt(c.req.param("id"));
+    const id = Number(c.req.param("id"));
 
     const result = await prisma.post.update({
       where: { id },
@@ -107,7 +107,7 @@ export const deletePost = async (c: any): Promise<void> => {
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
 
-    const id = parseInt(c.req.param("id"));
+    const id = Number(c.req.param("id"));
 
     const result = await prisma.post.delete({
       where: { id },
