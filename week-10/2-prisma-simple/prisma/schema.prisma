@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://trial_run_owner:sgePMBto9kZ7@ep-soft-shadow-a56az2sc.us-east-2.aws.neon.tech/assignment2?sslmode=require"
+  url      = "postgresql connection url"
 }
 
 model User {
